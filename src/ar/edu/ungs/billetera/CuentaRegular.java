@@ -27,8 +27,11 @@ public class CuentaRegular extends Cuenta{
     }
 
     @Override
-    void invertir(Double monto) {
-
+    public String obtenerInfoCuenta() {
+        StringBuilder sb = new StringBuilder("Regular: ");
+        sb.append(super.getAlias()).append(" (");
+        sb.append(super.getCvu()).append(")");
+        return sb.toString();
     }
 
     @Override

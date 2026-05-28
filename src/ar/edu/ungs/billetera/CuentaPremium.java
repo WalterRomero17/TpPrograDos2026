@@ -31,8 +31,11 @@ public class CuentaPremium extends Cuenta{
     }
 
     @Override
-    void invertir(Double monto) {
-
+    String obtenerInfoCuenta() {
+        StringBuilder sb = new StringBuilder("Premium: ");
+        sb.append(super.getAlias()).append(" (");
+        sb.append(super.getCvu()).append(")");
+        return sb.toString();
     }
 
     @Override

@@ -30,8 +30,12 @@ public class Usuario {
     public List<String> obtenerCvuCuentas() {
         return new ArrayList<>(this.cuentas.keySet());
     }
-    public List<Cuenta> obtenerCuentas() {
-        return new ArrayList<>(this.cuentas.values());
+    public List<String> obtenerInfoCuentas() {
+        List<String> infoCuentas = new ArrayList<>();
+        for(Cuenta cuenta : this.cuentas.values()){
+            infoCuentas.add(cuenta.obtenerInfoCuenta());
+        }
+        return infoCuentas;
     }
 
     public void recalcularTotalInvertido() {
@@ -44,6 +48,9 @@ public class Usuario {
 
     public Double getTotalInvertido() {
         return this.totalInvertido;
+    }
+    public String getDni(){
+        return this.dni;
     }
 
     @Override

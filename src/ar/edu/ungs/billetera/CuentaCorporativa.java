@@ -18,13 +18,16 @@ public class CuentaCorporativa extends Cuenta {
     public void retirarDinero(Double monto) {
         double nuevoMontoTotal = super.getSaldoDisponible() - monto;
         if(nuevoMontoTotal < 0.0){
-            throw new RuntimeException("No se puede retirar dinero. La cuenta no tiene saldo disponible");
+            throw new IllegalStateException("No se puede retirar dinero. La cuenta no tiene saldo disponible");
         }
         super.setSaldoDisponible(nuevoMontoTotal);
     }
 
     @Override
-    void invertir(Double monto) {
-
+    String obtenerInfoCuenta() {
+        StringBuilder sb = new StringBuilder("Corporativo: ");
+        sb.append(super.getAlias()).append(" (");
+        sb.append(super.getCvu()).append(")");
+        return sb.toString();
     }
 }

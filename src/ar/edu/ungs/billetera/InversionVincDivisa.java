@@ -1,16 +1,17 @@
 package ar.edu.ungs.billetera;
 
+import java.time.LocalDate;
+
 public class InversionVincDivisa extends Inversion {
     private String divisaReferencia;
     private double tasaInteres;
     private double cotizacionInicial;
 
-    public InversionVincDivisa(Usuario usuarioOperador, int plazoEnDias, double monto, 
-                               Cuenta cuentaAsociada, String divisaReferencia, double tasaInteres) {
-        super(usuarioOperador, plazoEnDias, monto, cuentaAsociada);
+    public InversionVincDivisa(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva, String divisaReferencia, double tasaInteres, double cotizacionInicial) {
+        super(fechaOperacion, dniUsuarioOperador, cvuCuentaEmisora, aprobada, fechaConst, plazoEnDias, monto, tipoInversion, estaActiva);
         this.divisaReferencia = divisaReferencia;
         this.tasaInteres = tasaInteres;
-        this.cotizacionInicial = Utilitarios.consultarCotizacion(divisaReferencia);
+        this.cotizacionInicial = cotizacionInicial;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class InversionVincDivisa extends Inversion {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Fecha: ").append(fechaOperacion);
-        sb.append(" | Operador: ").append(usuarioOperador.getNombre());
+        sb.append(" | Operador: ").append(dniUsuarioOperador);
         sb.append(" | Inversión Divisa (").append(divisaReferencia).append(") - Monto: $").append(monto);
         sb.append(" | Cotización de Compra: $").append(cotizacionInicial);
         if (estaActiva) {

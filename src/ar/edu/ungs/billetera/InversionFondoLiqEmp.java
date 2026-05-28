@@ -1,14 +1,14 @@
 package ar.edu.ungs.billetera;
 
+import java.time.LocalDate;
+
 public class InversionFondoLiqEmp extends Inversion {
     private double tasaInteres;
     private double cotizacionInicial;
 
-    public InversionFondoLiqEmp(Usuario usuarioOperador, int plazoEnDias, double monto, 
-                                Cuenta cuentaAsociada, double tasaInteres) {
-        super(usuarioOperador, plazoEnDias, monto, cuentaAsociada);
+    public InversionFondoLiqEmp(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva, double tasaInteres) {
+        super(fechaOperacion, dniUsuarioOperador, cvuCuentaEmisora, aprobada, fechaConst, plazoEnDias, monto, tipoInversion, estaActiva);
         this.tasaInteres = tasaInteres;
-        // Consulta la cuotaparte del fondo
         this.cotizacionInicial = Utilitarios.consultarCotizacion("FLE");
     }
 
@@ -32,7 +32,7 @@ public class InversionFondoLiqEmp extends Inversion {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Fecha: ").append(fechaOperacion);
-        sb.append(" | Operador: ").append(usuarioOperador.getNombre());
+        sb.append(" | Operador: ").append(dniUsuarioOperador);
         sb.append(" | Fondo Empresarial (FLE) - Monto: $").append(monto);
         sb.append(" | Valor Inicial: $").append(cotizacionInicial);
         if (estaActiva) {

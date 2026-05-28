@@ -3,8 +3,8 @@ package ar.edu.ungs.billetera;
 public abstract class Cuenta {
     private String cvu;
     private String alias;
-    private Double saldoDisponible;
-    private Double saldoInvertido;
+    private Double saldoDisponible = 0.0;
+    private Double saldoInvertido = 0.0;
 
     public Cuenta(String cvu, String alias) {
         this.alias = alias;
@@ -13,7 +13,16 @@ public abstract class Cuenta {
 
     abstract void ingresarDinero(Double monto);
     abstract void retirarDinero(Double monto);
-    abstract void invertir(Double monto);
+    abstract String obtenerInfoCuenta();
+
+    public void invertir(Double monto){
+        this.saldoDisponible -= monto;
+        this.saldoInvertido += monto;
+    };
+    public void finalizarInversion(Double monto){
+        this.saldoInvertido -= monto;
+        this.saldoDisponible += monto;
+    };
 
     public Double getSaldoDisponible() {
         return this.saldoDisponible;

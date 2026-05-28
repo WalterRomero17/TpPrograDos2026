@@ -1,11 +1,12 @@
 package ar.edu.ungs.billetera;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class Billetera implements IBilletera{
 
     HashMap<String, Usuario> usuarios = new HashMap<>();
-    //HashMap<String, Actividades> cuentas;
+    HashMap<Integer, Actividad> actividades = new HashMap<>();
     HashMap<String, Empresa> empresas = new HashMap<>();
 
     private final String codigoInicioCvu = "00000031" ;
@@ -83,7 +84,7 @@ public class Billetera implements IBilletera{
         if (!usuarios.containsKey(dniUsuario)) {
             throw new RuntimeException("Usuario no encontrado");
         }
-        return usuarios.get(dniUsuario).obtenerCvuCuentas();
+        return usuarios.get(dniUsuario).obtenerInfoCuentas();
     }
 
     @Override
@@ -99,26 +100,107 @@ public class Billetera implements IBilletera{
 
     @Override
     public void realizarTransferencia(String cvuOrigen, String cvuDestino, double monto) {
+        Cuenta cuentaOrigen = null;
+        Cuenta cuentaDestino = null;
+        String dniUsuario = null;
+        String dniDestino = null;
+        for(Usuario usuario : usuarios.values()){
+            Cuenta cuentaOrigenAux = usuario.getCuenta(cvuOrigen);
+            Cuenta cuentaDestinoAux = usuario.getCuenta(cvuDestino);
+            if(cuentaOrigenAux != null) {
+                cuentaOrigen = cuentaOrigenAux;
+                dniUsuario = usuario.getDni();
+            }
+            if(cuentaDestinoAux != null) {
+                cuentaDestino = cuentaDestinoAux;
+                dniDestino = usuario.getDni();
+            }
+        }
 
+        if(cuentaOrigen == null) {
+            throw new RuntimeException("Cuenta de origen no encontrada");
+        }
+
+        if(cuentaDestino == null) {
+            throw new RuntimeException("Cuenta de destino no encontrada");
+        }
+
+        cuentaOrigen.retirarDinero(monto);
+        cuentaDestino.ingresarDinero(monto);
+
+        Actividad actividad = new Transferencia(LocalDate.now(), dniUsuario,  cvuOrigen,true, cvuDestino, dniDestino, monto);
+        actividades.put(actividad.getId(),actividad);
     }
 
     @Override
     public int realizarInversionRentaFija(String dni, String cvu, double monto, int plazoDias) {
-        return 0;
+        if(!usuarios.containsKey(dni)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        if(cuenta == null) {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+        cuenta.invertir(monto);
+
+        Actividad actividad = new InversionRentaFija(LocalDate.now(), dni,  cvu, true, LocalDate.now(), plazoDias, monto, "Inversion Renta Fija", true, 0.0);
+        actividades.put(actividad.getId(), actividad);
+        return actividad.getId();
     }
 
     @Override
     public int realizarInversionDivisa(String dni, String cvu, double monto, int plazoDias, String divisa, double tasa) {
-        return 0;
+        if(!usuarios.containsKey(dni)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        if(cuenta == null) {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+        cuenta.invertir(monto);
+
+        Actividad actividad = new InversionVincDivisa(LocalDate.now(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Vinculada a Divisa",  true, divisa, tasa, Utilitarios.consultarCotizacion(divisa));
+        actividades.put(actividad.getId(), actividad);
+        return actividad.getId();
     }
 
     @Override
     public int realizarInversionLiquidez(String dni, String cvu, double monto, int plazoDias) {
-        return 0;
+        if(!usuarios.containsKey(dni)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        if(cuenta == null) {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+        cuenta.invertir(monto);
+
+        Actividad actividad = new InversionFondoLiqEmp(LocalDate.now(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08);
+        actividades.put(actividad.getId(), actividad);
+        return actividad.getId();
     }
 
     @Override
     public void precancelarInversion(String dni, String cvu, int idInversion) {
+        if(!usuarios.containsKey(dni)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        if(cuenta == null) {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+        Inversion inversion = (Inversion) actividades.get(idInversion);
+        if(inversion == null) {
+            throw new IllegalArgumentException("Inversion no encontrada");
+        }
+
+        cuenta.finalizarInversion(inversion.precancelar());
+
+        actividades.put(idInversion, inversion);
 
     }
 
@@ -129,17 +211,37 @@ public class Billetera implements IBilletera{
 
     @Override
     public List<String> consultarHistorialGlobal() {
-        return Collections.emptyList();
+        List<String> historial = new ArrayList<>();
+        for(Actividad actividad : actividades.values()) {
+            historial.add(actividad.devolverInfo());
+        }
+        return historial;
     }
 
     @Override
     public List<String> consultarHistorialCuenta(String cvu) {
-        return Collections.emptyList();
+        List<String> historial = new ArrayList<>();
+        for(Actividad actividad : actividades.values()) {
+            if(actividad.getCvuCuentaEmisora().equals(cvu)){
+                historial.add(actividad.devolverInfo());
+            } else {
+                new RuntimeException("Cuenta no encontrada");
+            }
+        }
+        return historial;
     }
 
     @Override
     public List<String> consultarHistorialUsuario(String dniUsuario) {
-        return Collections.emptyList();
+        List<String> historial = new ArrayList<>();
+        for(Actividad actividad : actividades.values()) {
+            if(actividad.getDniUsuarioOperador().equals(dniUsuario)){
+                historial.add(actividad.devolverInfo());
+            } else {
+                new RuntimeException("Usuario no encontrado");
+            }
+        }
+        return historial;
     }
 
     @Override
@@ -152,7 +254,53 @@ public class Billetera implements IBilletera{
 
     @Override
     public List<String> cuentasConMayorVolumen(int cantidadTop) {
-        return Collections.emptyList();
+        Map<String, Integer> cantidadPorCvu = new HashMap<>();
+
+        // Contar transacciones por CVU
+        for (Actividad actividad : actividades.values()) {
+
+            String cvu = actividad.getCvuCuentaEmisora();
+
+            if (cantidadPorCvu.containsKey(cvu)) {
+                int cantidadActual = cantidadPorCvu.get(cvu);
+                cantidadPorCvu.put(cvu, cantidadActual + 1);
+            } else {
+                cantidadPorCvu.put(cvu, 1);
+            }
+        }
+
+        // Convertir a lista para ordenar
+        List<Map.Entry<String, Integer>> listaOrdenada =
+                new ArrayList<>(cantidadPorCvu.entrySet());
+
+        Collections.sort(listaOrdenada,
+                new Comparator<Map.Entry<String, Integer>>() {
+                    @Override
+                    public int compare(Map.Entry<String, Integer> o1,
+                                       Map.Entry<String, Integer> o2) {
+
+                        return o2.getValue().compareTo(o1.getValue());
+                    }
+                });
+
+        // Guardar las cuentas TOP
+        List<String> cuentasTop = new ArrayList<>();
+
+        for (int i = 0; i < cantidadTop && i < listaOrdenada.size(); i++) {
+            cuentasTop.add(listaOrdenada.get(i).getKey());
+        }
+
+        // Armar resultado usando devolverInfo()
+        List<String> resultado = new ArrayList<>();
+
+        for (Actividad actividad : actividades.values()) {
+
+            if (cuentasTop.contains(actividad.getCvuCuentaEmisora())) {
+                resultado.add(actividad.devolverInfo());
+            }
+        }
+
+        return resultado;
     }
 
     private String generarCvu() {
