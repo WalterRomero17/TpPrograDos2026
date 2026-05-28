@@ -6,7 +6,7 @@ public class CuentaPremium extends Cuenta{
     public CuentaPremium(String cvu, String alias,double depositoInicial) {
         super(cvu, alias);
         if(depositoInicial < minimoEnCuenta){
-            throw new RuntimeException("El deposito inicial debe ser mayor a " + minimoEnCuenta);
+            throw new IllegalArgumentException("El deposito inicial debe ser mayor a " + minimoEnCuenta);
         }
         super.setSaldoDisponible(depositoInicial);
     }

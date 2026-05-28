@@ -20,7 +20,7 @@ public class Billetera implements IBilletera{
 
     @Override
     public void agregarPersonaAutorizada(String cuitEmpresa, String dniAutorizado) {
-        if (empresas.containsKey(cuitEmpresa)) {
+        if (!empresas.containsKey(cuitEmpresa)) {
             throw new RuntimeException("Empresa no encontrada");
         }
         empresas.get(cuitEmpresa).agregarPersonaAutorizada(dniAutorizado);
