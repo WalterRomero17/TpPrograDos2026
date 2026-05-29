@@ -160,7 +160,7 @@ public class Billetera implements IBilletera{
         cuenta.invertir(monto);
         usuario.recalcularTotalInvertido();
 
-        Actividad actividad = new InversionRentaFija(Utilitarios.hoy(), dni,  cvu, true, Utilitarios.hoy(), plazoDias, monto, "Inversion Renta Fija", true, 0.0);
+        Actividad actividad = new InversionRentaFija(Utilitarios.hoy(), dni,  cvu, true, Utilitarios.hoy(), plazoDias, monto, "Inversion Renta Fija", true, 0.2);
         actividades.put(actividad.getId(), actividad);
         return actividad.getId();
     }
@@ -195,6 +195,9 @@ public class Billetera implements IBilletera{
         Cuenta cuenta = usuario.getCuenta(cvu);
         if(cuenta == null) {
             throw new RuntimeException("Cuenta no encontrada");
+        }
+        if(!(cuenta instanceof CuentaCorporativa)) {
+            throw new IllegalArgumentException("La cuenta no es corporativa");
         }
 
         cuenta.invertir(monto);
