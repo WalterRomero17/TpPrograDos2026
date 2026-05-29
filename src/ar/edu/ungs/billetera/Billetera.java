@@ -371,5 +371,14 @@ public class Billetera implements IBilletera{
         return cvu.toString();
     }
 
-
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Billetera{");
+        sb.append("usuarios=").append(usuarios);
+        sb.append(", actividades=").append(actividades);
+        sb.append(", empresas=").append(empresas);
+        sb.append(", codigoInicioCvu='").append(codigoInicioCvu).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
