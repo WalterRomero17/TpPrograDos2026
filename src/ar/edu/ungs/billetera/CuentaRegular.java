@@ -11,7 +11,7 @@ public class CuentaRegular extends Cuenta{
     public void ingresarDinero(Double monto) {
         double nuevoMontoTotal = super.getSaldoTotal() + monto;
         if(nuevoMontoTotal > limiteCuenta){
-            throw new RuntimeException("No se puede ingresar dinero. Se llego al limite de la cuenta");
+            throw new IllegalStateException("No se puede ingresar dinero. Se llego al limite de la cuenta");
         }
 
         super.setSaldoDisponible(super.getSaldoDisponible() + monto);

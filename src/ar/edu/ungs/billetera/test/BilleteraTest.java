@@ -26,6 +26,7 @@ public class BilleteraTest {
         Utilitarios.definirHoy(LocalDate.now());
         Utilitarios.actualizarCotizacion("USD", 1000);
         Utilitarios.actualizarCotizacion("EUR", 1100);
+        Utilitarios.actualizarCotizacion("FLE", 100.0);
     }
 
     @Test

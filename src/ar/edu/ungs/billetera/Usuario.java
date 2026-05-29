@@ -46,6 +46,11 @@ public class Usuario {
         this.totalInvertido = sumaTotal;
     }
 
+    // getters y setters
+    public void sumarInversion(double monto) {
+        this.totalInvertido += monto;
+    }
+    
     public Double getTotalInvertido() {
         return this.totalInvertido;
     }

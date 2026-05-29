@@ -104,6 +104,7 @@ public class Billetera implements IBilletera{
         Cuenta cuentaDestino = null;
         String dniUsuario = null;
         String dniDestino = null;
+        
         for(Usuario usuario : usuarios.values()){
             Cuenta cuentaOrigenAux = usuario.getCuenta(cvuOrigen);
             Cuenta cuentaDestinoAux = usuario.getCuenta(cvuDestino);
@@ -125,11 +126,24 @@ public class Billetera implements IBilletera{
             throw new RuntimeException("Cuenta de destino no encontrada");
         }
 
+       
+        //primero chequeamos si va a fallar. 
+        // si va a fallar por saldo, creamos la actividad como RECHAZADA (false) y la guardamos 
+        if (cuentaOrigen.getSaldoDisponible() < monto) {
+            Actividad actividadFallida = new Transferencia(Utilitarios.hoy(), dniUsuario, cvuOrigen, false, cvuDestino, dniDestino, monto);
+            actividades.put(actividadFallida.getId(), actividadFallida);
+            
+            // una vez guardada en el historial para que sume volumen, dejamos que la cuenta tire el error
+            cuentaOrigen.retirarDinero(monto); 
+        }
+
+        // si tiene saldo, el "if" de arriba se ignora y pasa por acá de forma normal:
         cuentaOrigen.retirarDinero(monto);
         cuentaDestino.ingresarDinero(monto);
 
-        Actividad actividad = new Transferencia(LocalDate.now(), dniUsuario,  cvuOrigen,true, cvuDestino, dniDestino, monto);
-        actividades.put(actividad.getId(),actividad);
+        // creamos y guardamos la transferencia exitosa (true)
+        Actividad actividadOk = new Transferencia(Utilitarios.hoy(), dniUsuario, cvuOrigen, true, cvuDestino, dniDestino, monto);
+        actividades.put(actividadOk.getId(), actividadOk);
     }
 
     @Override
@@ -137,14 +151,16 @@ public class Billetera implements IBilletera{
         if(!usuarios.containsKey(dni)) {
             throw new RuntimeException("Usuario no encontrado");
         }
-        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        Usuario usuario = usuarios.get(dni);
+        Cuenta cuenta = usuario.getCuenta(cvu);
         if(cuenta == null) {
             throw new RuntimeException("Cuenta no encontrada");
         }
 
         cuenta.invertir(monto);
+        usuario.recalcularTotalInvertido();
 
-        Actividad actividad = new InversionRentaFija(LocalDate.now(), dni,  cvu, true, LocalDate.now(), plazoDias, monto, "Inversion Renta Fija", true, 0.0);
+        Actividad actividad = new InversionRentaFija(Utilitarios.hoy(), dni,  cvu, true, Utilitarios.hoy(), plazoDias, monto, "Inversion Renta Fija", true, 0.0);
         actividades.put(actividad.getId(), actividad);
         return actividad.getId();
     }
@@ -154,15 +170,19 @@ public class Billetera implements IBilletera{
         if(!usuarios.containsKey(dni)) {
             throw new RuntimeException("Usuario no encontrado");
         }
-        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        Usuario usuario = usuarios.get(dni);
+        Cuenta cuenta = usuario.getCuenta(cvu);
         if(cuenta == null) {
             throw new RuntimeException("Cuenta no encontrada");
         }
 
         cuenta.invertir(monto);
 
-        Actividad actividad = new InversionVincDivisa(LocalDate.now(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Vinculada a Divisa",  true, divisa, tasa, Utilitarios.consultarCotizacion(divisa));
+        Actividad actividad = new InversionVincDivisa(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Vinculada a Divisa",  true, divisa, tasa, Utilitarios.consultarCotizacion(divisa));
         actividades.put(actividad.getId(), actividad);
+        
+        usuario.recalcularTotalInvertido();
+        
         return actividad.getId();
     }
 
@@ -171,15 +191,17 @@ public class Billetera implements IBilletera{
         if(!usuarios.containsKey(dni)) {
             throw new RuntimeException("Usuario no encontrado");
         }
-        Cuenta cuenta = usuarios.get(dni).getCuenta(cvu);
+        Usuario usuario = usuarios.get(dni);
+        Cuenta cuenta = usuario.getCuenta(cvu);
         if(cuenta == null) {
             throw new RuntimeException("Cuenta no encontrada");
         }
 
         cuenta.invertir(monto);
 
-        Actividad actividad = new InversionFondoLiqEmp(LocalDate.now(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08);
+        Actividad actividad = new InversionFondoLiqEmp(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08);
         actividades.put(actividad.getId(), actividad);
+        usuario.recalcularTotalInvertido();
         return actividad.getId();
     }
 
@@ -193,21 +215,39 @@ public class Billetera implements IBilletera{
             throw new RuntimeException("Cuenta no encontrada");
         }
 
-        Inversion inversion = (Inversion) actividades.get(idInversion);
-        if(inversion == null) {
+        Actividad actividad = actividades.get(idInversion);
+        if(actividad == null || !(actividad instanceof Inversion)) {
             throw new IllegalArgumentException("Inversion no encontrada");
         }
 
-        cuenta.finalizarInversion(inversion.precancelar());
+        Inversion inversion = (Inversion) actividad;
 
+        // 1. Ejecutamos la precancelación, que nos devuelve la plata final (Capital + Interés penalizado)
+        Double montoADevolver = inversion.precancelar();
+
+        // 2. Usamos el método arreglado de Cuenta pasándole AMBOS valores
+        cuenta.finalizarInversion(inversion.getMonto(), montoADevolver);
+
+        // 3. Recalculamos el total invertido del usuario porque acaba de sacar plata de sus inversiones
+        usuarios.get(dni).recalcularTotalInvertido();
         actividades.put(idInversion, inversion);
-
     }
 
     @Override
     public String consultarCvu(String alias) {
-        return "";
+    	for (Usuario usuario : usuarios.values()) {
+            for (String cvu : usuario.obtenerCvuCuentas()) {
+                Cuenta cuenta = usuario.getCuenta(cvu);
+                
+                if (cuenta != null && alias.equals(cuenta.getAlias())) {
+                    return cuenta.getCvu();
+                }
+            }
+        }
+        
+        throw new IllegalArgumentException("Cuenta no encontrada para el alias especificado: " + alias);
     }
+    	
 
     @Override
     public List<String> consultarHistorialGlobal() {
@@ -222,11 +262,20 @@ public class Billetera implements IBilletera{
     public List<String> consultarHistorialCuenta(String cvu) {
         List<String> historial = new ArrayList<>();
         for(Actividad actividad : actividades.values()) {
-            if(actividad.getCvuCuentaEmisora().equals(cvu)){
-                historial.add(actividad.devolverInfo());
-            } else {
-                new RuntimeException("Cuenta no encontrada");
+        	// es emisor?
+            boolean esEmisor = cvu.equals(actividad.getCvuCuentaEmisora());
+            
+            // es receptor?
+            boolean esReceptor = false;
+            if (actividad instanceof Transferencia) {
+                Transferencia trans = (Transferencia) actividad;
+                esReceptor = cvu.equals(trans.getCvuCuentaReceptora()); 
             }
+            
+            // si es alguno de los 2
+            if (esEmisor || esReceptor) {
+                historial.add(actividad.devolverInfo());
+            }   
         }
         return historial;
     }
@@ -235,10 +284,16 @@ public class Billetera implements IBilletera{
     public List<String> consultarHistorialUsuario(String dniUsuario) {
         List<String> historial = new ArrayList<>();
         for(Actividad actividad : actividades.values()) {
-            if(actividad.getDniUsuarioOperador().equals(dniUsuario)){
+        	boolean esEmisor = dniUsuario.equals(actividad.getDniUsuarioOperador());
+            
+            boolean esReceptor = false;
+            if (actividad instanceof Transferencia) {
+                Transferencia trans = (Transferencia) actividad;
+                esReceptor = dniUsuario.equals(trans.getDniDestino());
+            }
+            
+            if (esEmisor || esReceptor) {
                 historial.add(actividad.devolverInfo());
-            } else {
-                new RuntimeException("Usuario no encontrado");
             }
         }
         return historial;
@@ -255,52 +310,50 @@ public class Billetera implements IBilletera{
     @Override
     public List<String> cuentasConMayorVolumen(int cantidadTop) {
         Map<String, Integer> cantidadPorCvu = new HashMap<>();
-
-        // Contar transacciones por CVU
-        for (Actividad actividad : actividades.values()) {
-
+        
+        for (Actividad actividad : actividades.values()) {    
+        	
             String cvu = actividad.getCvuCuentaEmisora();
-
-            if (cantidadPorCvu.containsKey(cvu)) {
-                int cantidadActual = cantidadPorCvu.get(cvu);
-                cantidadPorCvu.put(cvu, cantidadActual + 1);
-            } else {
-                cantidadPorCvu.put(cvu, 1);
+            
+            if (cvu != null) {
+                if (cantidadPorCvu.containsKey(cvu)) {
+                    int cantidadActual = cantidadPorCvu.get(cvu);
+                    cantidadPorCvu.put(cvu, cantidadActual + 1);
+                } else {
+                    cantidadPorCvu.put(cvu, 1);
+                }
+            }
+            
+            if (actividad instanceof Transferencia) {
+                Transferencia trans = (Transferencia) actividad;
+                String cvuReceptor = trans.getCvuCuentaReceptora();
+                
+                if (cvuReceptor != null) {
+                    if (cantidadPorCvu.containsKey(cvuReceptor)) {
+                        int cantidadActual = cantidadPorCvu.get(cvuReceptor);
+                        cantidadPorCvu.put(cvuReceptor, cantidadActual + 1);
+                    } else {
+                        cantidadPorCvu.put(cvuReceptor, 1);
+                    }
+                }
             }
         }
 
-        // Convertir a lista para ordenar
-        List<Map.Entry<String, Integer>> listaOrdenada =
-                new ArrayList<>(cantidadPorCvu.entrySet());
-
-        Collections.sort(listaOrdenada,
-                new Comparator<Map.Entry<String, Integer>>() {
+        List<Map.Entry<String, Integer>> listaOrdenada = new ArrayList<>(cantidadPorCvu.entrySet());
+        Collections.sort(listaOrdenada, new Comparator<Map.Entry<String, Integer>>() {
                     @Override
                     public int compare(Map.Entry<String, Integer> o1,
                                        Map.Entry<String, Integer> o2) {
-
                         return o2.getValue().compareTo(o1.getValue());
                     }
                 });
 
-        // Guardar las cuentas TOP
         List<String> cuentasTop = new ArrayList<>();
-
         for (int i = 0; i < cantidadTop && i < listaOrdenada.size(); i++) {
             cuentasTop.add(listaOrdenada.get(i).getKey());
         }
 
-        // Armar resultado usando devolverInfo()
-        List<String> resultado = new ArrayList<>();
-
-        for (Actividad actividad : actividades.values()) {
-
-            if (cuentasTop.contains(actividad.getCvuCuentaEmisora())) {
-                resultado.add(actividad.devolverInfo());
-            }
-        }
-
-        return resultado;
+        return cuentasTop;
     }
 
     private String generarCvu() {

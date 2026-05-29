@@ -23,11 +23,19 @@ public class Transferencia extends Actividad {
                 " monto: " + monto +
                 " [" + (aprobada ? "Aprobado" : "Rechazado") + "]";
     }
+    
     //getters
-
     public double getMonto() { 
     	return monto; 
     	}
+    
+    public String getCvuCuentaReceptora() {
+        return cvuCuentaReceptora;
+    }
+    
+    public String getDniDestino() {
+    	return dniDestino;
+    }
 
 
     @Override

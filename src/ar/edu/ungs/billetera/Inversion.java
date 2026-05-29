@@ -1,7 +1,6 @@
 package ar.edu.ungs.billetera;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 public abstract class Inversion extends Actividad {
     protected LocalDate fechaConst;
@@ -25,7 +24,7 @@ public abstract class Inversion extends Actividad {
 
     public Double precancelar() {
         if (!estaActiva) {
-            new RuntimeException("La inversión no está activa");
+        	throw new RuntimeException("La inversión no está activa");
         }
 
         long diasPasados = Utilitarios.hoy().toEpochDay() - fechaConst.toEpochDay();

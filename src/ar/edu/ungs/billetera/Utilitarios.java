@@ -64,7 +64,7 @@ public class Utilitarios {
      */
     public static double consultarCotizacion(String activo) {
         if (!sCotizaciones.containsKey(activo))
-            throw new RuntimeException("El activo '" + activo + "' no está registrado.");
+            throw new IllegalArgumentException("El activo '" + activo + "' no está registrado.");
 
         return sCotizaciones.get(activo);
     }

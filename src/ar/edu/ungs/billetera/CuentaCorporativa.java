@@ -22,6 +22,10 @@ public class CuentaCorporativa extends Cuenta {
         }
         super.setSaldoDisponible(nuevoMontoTotal);
     }
+    
+    public String getCuitEmpresa() {
+        return cuitEmpresa;
+    }
 
     @Override
     String obtenerInfoCuenta() {

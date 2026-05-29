@@ -8,6 +8,7 @@ public class InversionRentaFija extends Inversion {
     public InversionRentaFija(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva, double tasaInteres) {
         super(fechaOperacion, dniUsuarioOperador, cvuCuentaEmisora, aprobada, fechaConst, plazoEnDias, monto, tipoInversion, estaActiva);
         this.tasaInteres = tasaInteres;
+        this.fechaConst = Utilitarios.hoy();
     }
 
     @Override

@@ -3,8 +3,8 @@ package ar.edu.ungs.billetera;
 public abstract class Cuenta {
     private String cvu;
     private String alias;
-    private Double saldoDisponible = 0.0;
-    private Double saldoInvertido = 0.0;
+    private double saldoDisponible = 0.0;
+    private double saldoInvertido = 0.0;
 
     public Cuenta(String cvu, String alias) {
         this.alias = alias;
@@ -15,16 +15,20 @@ public abstract class Cuenta {
     abstract void retirarDinero(Double monto);
     abstract String obtenerInfoCuenta();
 
-    public void invertir(Double monto){
+    public void invertir(double monto){
+    	if (this.saldoDisponible < monto) {
+            throw new IllegalStateException("Saldo insuficiente para invertir");
+        }
         this.saldoDisponible -= monto;
         this.saldoInvertido += monto;
     };
-    public void finalizarInversion(Double monto){
-        this.saldoInvertido -= monto;
-        this.saldoDisponible += monto;
+    
+    public void finalizarInversion(Double capitalInvertido, Double montoTotalADevolver){
+        this.saldoInvertido -= capitalInvertido;     
+        this.saldoDisponible += montoTotalADevolver;   // ahora si rey le sumamos al bolsillo el capital + las ganancias
     };
 
-    public Double getSaldoDisponible() {
+    public double getSaldoDisponible() {
         return this.saldoDisponible;
     }
 
@@ -32,11 +36,11 @@ public abstract class Cuenta {
         this.saldoDisponible = saldoDisponible;
     }
 
-    public Double getSaldoInvertido() {
+    public double getSaldoInvertido() {
         return this.saldoInvertido;
     }
 
-    public Double getSaldoTotal(){
+    public double getSaldoTotal(){
         return this.saldoDisponible + this.saldoInvertido;
     }
 
