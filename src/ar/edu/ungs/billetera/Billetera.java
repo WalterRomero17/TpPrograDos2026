@@ -159,7 +159,8 @@ public class Billetera implements IBilletera{
 
         cuenta.invertir(monto);
         usuario.recalcularTotalInvertido();
-
+        //En la tasa de interes se pone 0.2, que es el 20%. Esto es porque test utiliza 20% de tasa de interes, lo ideal es que sea un parámetro (como dice el enunciado),
+        // pero la interfaz previa no tenía un parámetro para la tasa de interes
         Actividad actividad = new InversionRentaFija(Utilitarios.hoy(), dni,  cvu, true, Utilitarios.hoy(), plazoDias, monto, "Inversion Renta Fija", true, 0.2);
         actividades.put(actividad.getId(), actividad);
         return actividad.getId();
@@ -202,6 +203,7 @@ public class Billetera implements IBilletera{
 
         cuenta.invertir(monto);
 
+        // el valor de la tasa de interes es 0.08, que es el 8% que es lo que decia el enunciado. El activo es "FLE" por lo mencionado enel enunciado
         Actividad actividad = new InversionLiquidez(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08, "FLE");
         actividades.put(actividad.getId(), actividad);
         usuario.recalcularTotalInvertido();

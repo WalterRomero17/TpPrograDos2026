@@ -1,6 +1,8 @@
 package ar.edu.ungs.billetera;
 
 public class CuentaRegular extends Cuenta{
+    //Usamos esta manera, ya que creemos que es la mejor solución, dentro de las limitaciones de los visto en la materia.
+    //En otro contexto, para que sea escalable, usariamos un archivo de propiedades o un llamado a la base de datos.
     private final double limiteCuenta = 5000000.0;
 
     public CuentaRegular(String cvu, String alias) {

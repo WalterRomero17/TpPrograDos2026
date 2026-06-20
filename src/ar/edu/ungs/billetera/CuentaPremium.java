@@ -1,6 +1,8 @@
 package ar.edu.ungs.billetera;
 
 public class CuentaPremium extends Cuenta{
+    //Usamos esta manera, ya que creemos que es la mejor solución, dentro de las limitaciones de los visto en la materia.
+    //En otro contexto, para que sea escalable, usariamos un archivo de propiedades o un llamado a la base de datos.
     private final double minimoEnCuenta = 500000.0;
 
     public CuentaPremium(String cvu, String alias, double depositoInicial) {

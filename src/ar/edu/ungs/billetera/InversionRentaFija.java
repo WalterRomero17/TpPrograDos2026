@@ -14,7 +14,7 @@ public class InversionRentaFija extends Inversion {
     public double calcularMontoLiquidacion(long diasTranscurridos, boolean esPrecancelado) {
         double interesAcumulado = getMonto() * (tasaInteres / 365.0) * diasTranscurridos;
         if (esPrecancelado) {
-            interesAcumulado /= 2.0; // Penalización que pide el test
+            interesAcumulado /= 2.0; // Penalización que se menciona en el enunciado
         }
         return getMonto() + interesAcumulado;
     }

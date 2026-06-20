@@ -19,7 +19,7 @@ public class InversionDivisa extends Inversion {
         double divisasEquivalente = getMonto() / cotizacionInicial;
         double interesesEnDivisas = divisasEquivalente * (tasaInteres / 365.0) * diasTranscurridos;
         
-        if (esPrecancelado) interesesEnDivisas /= 2.0;
+        if (esPrecancelado) interesesEnDivisas /= 2.0; // Penalización que se menciona en el enunciado
         
         double cotizacionActual = Utilitarios.consultarCotizacion(divisaReferencia);
         return (divisasEquivalente + interesesEnDivisas) * cotizacionActual;

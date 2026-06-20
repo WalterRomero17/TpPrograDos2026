@@ -24,6 +24,9 @@ public abstract class Actividad {
         return random.nextInt(1000000000);
     }
 
+    // Consideramos esta manera es correcta, dentro de lo requerido en el enunciado.
+    // Esto es porque si usaramos el toString() de la superclase, los toString() de las subclases
+    // no se mostrarían correctamente para lo que el enunciado requiere.
     abstract String devolverInfo();
 
     public int getId() {

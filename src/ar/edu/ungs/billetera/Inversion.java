@@ -22,7 +22,16 @@ public abstract class Inversion extends Actividad {
 
     public abstract double calcularMontoLiquidacion(long diasTranscurridos, boolean esPrecancelado);
 
+    public boolean admitePrecancelacion() {
+        return true;
+    }
+
     public Double precancelar() {
+
+        if (!admitePrecancelacion()){
+            throw new IllegalArgumentException("La inversión no admite precancelación");
+        }
+
         if (!estaActiva) {
         	throw new RuntimeException("La inversión no está activa");
         }
