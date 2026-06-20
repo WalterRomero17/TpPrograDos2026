@@ -1,7 +1,5 @@
 package ar.edu.ungs.billetera;
 
-import com.sun.org.apache.bcel.internal.generic.MONITORENTER;
-
 import java.time.LocalDate;
 
 public class InversionLiquidez extends Inversion {
