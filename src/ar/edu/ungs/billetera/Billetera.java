@@ -178,7 +178,7 @@ public class Billetera implements IBilletera{
 
         cuenta.invertir(monto);
 
-        Actividad actividad = new InversionVincDivisa(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Vinculada a Divisa",  true, divisa, tasa, Utilitarios.consultarCotizacion(divisa));
+        Actividad actividad = new InversionDivisa(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Vinculada a Divisa",  true, divisa, tasa, Utilitarios.consultarCotizacion(divisa));
         actividades.put(actividad.getId(), actividad);
         
         usuario.recalcularTotalInvertido();
@@ -202,7 +202,7 @@ public class Billetera implements IBilletera{
 
         cuenta.invertir(monto);
 
-        Actividad actividad = new InversionFondoLiqEmp(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08);
+        Actividad actividad = new InversionLiquidez(Utilitarios.hoy(), dni, cvu,true, LocalDate.now(), plazoDias, monto, "Inversion Fondo Liquidez",  true, 0.08, "FLE");
         actividades.put(actividad.getId(), actividad);
         usuario.recalcularTotalInvertido();
         return actividad.getId();
@@ -225,13 +225,13 @@ public class Billetera implements IBilletera{
 
         Inversion inversion = (Inversion) actividad;
 
-        // 1. Ejecutamos la precancelación, que nos devuelve la plata final (Capital + Interés penalizado)
+        
         Double montoADevolver = inversion.precancelar();
 
-        // 2. Usamos el método arreglado de Cuenta pasándole AMBOS valores
+        //Usamos el método arreglado de Cuenta pasándole AMBOS valores
         cuenta.finalizarInversion(inversion.getMonto(), montoADevolver);
 
-        // 3. Recalculamos el total invertido del usuario porque acaba de sacar plata de sus inversiones
+        //Recalculamos el total invertido del usuario porque acaba de sacar plata de sus inversiones
         usuarios.get(dni).recalcularTotalInvertido();
         actividades.put(idInversion, inversion);
     }
@@ -261,7 +261,7 @@ public class Billetera implements IBilletera{
         return historial;
     }
 
-    @Override
+    @Override 
     public List<String> consultarHistorialCuenta(String cvu) {
         List<String> historial = new ArrayList<>();
         for(Actividad actividad : actividades.values()) {

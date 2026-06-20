@@ -3,7 +3,7 @@ package ar.edu.ungs.billetera;
 public class CuentaPremium extends Cuenta{
     private final double minimoEnCuenta = 500000.0;
 
-    public CuentaPremium(String cvu, String alias,double depositoInicial) {
+    public CuentaPremium(String cvu, String alias, double depositoInicial) {
         super(cvu, alias);
         if(depositoInicial < minimoEnCuenta){
             throw new IllegalArgumentException("El deposito inicial debe ser mayor a " + minimoEnCuenta);

@@ -2,12 +2,12 @@ package ar.edu.ungs.billetera;
 
 import java.time.LocalDate;
 
-public class InversionVincDivisa extends Inversion {
+public class InversionDivisa extends Inversion {
     private String divisaReferencia;
     private double tasaInteres;
     private double cotizacionInicial;
 
-    public InversionVincDivisa(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva, String divisaReferencia, double tasaInteres, double cotizacionInicial) {
+    public InversionDivisa(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva, String divisaReferencia, double tasaInteres, double cotizacionInicial) {
         super(fechaOperacion, dniUsuarioOperador, cvuCuentaEmisora, aprobada, fechaConst, plazoEnDias, monto, tipoInversion, estaActiva);
         this.divisaReferencia = divisaReferencia;
         this.tasaInteres = tasaInteres;
@@ -16,7 +16,7 @@ public class InversionVincDivisa extends Inversion {
 
     @Override
     public double calcularMontoLiquidacion(long diasTranscurridos, boolean esPrecancelado) {
-        double divisasEquivalente = monto / cotizacionInicial;
+        double divisasEquivalente = getMonto() / cotizacionInicial;
         double interesesEnDivisas = divisasEquivalente * (tasaInteres / 365.0) * diasTranscurridos;
         
         if (esPrecancelado) interesesEnDivisas /= 2.0;
@@ -27,7 +27,7 @@ public class InversionVincDivisa extends Inversion {
 
     @Override
     public double calcularRendimiento() {
-        return calcularMontoLiquidacion(plazoEnDias, false) - monto;
+        return calcularMontoLiquidacion(getPlazoEnDias(), false) - getMonto();
     }
 
     @Override
@@ -35,9 +35,9 @@ public class InversionVincDivisa extends Inversion {
         StringBuilder sb = new StringBuilder();
         sb.append("Fecha: ").append(fechaOperacion);
         sb.append(" | Operador: ").append(dniUsuarioOperador);
-        sb.append(" | Inversión Divisa (").append(divisaReferencia).append(") - Monto: $").append(monto);
+        sb.append(" | Inversión Divisa (").append(divisaReferencia).append(") - Monto: $").append(getMonto());
         sb.append(" | Cotización de Compra: $").append(cotizacionInicial);
-        if (estaActiva) {
+        if (getEstado()) {
             sb.append(" | Estado: Activo");
         } else {
             sb.append(" | Estado: Finalizado/Precancelado");

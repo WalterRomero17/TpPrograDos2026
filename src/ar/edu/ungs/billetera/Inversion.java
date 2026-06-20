@@ -3,11 +3,11 @@ package ar.edu.ungs.billetera;
 import java.time.LocalDate;
 
 public abstract class Inversion extends Actividad {
-    protected LocalDate fechaConst;
-    protected int plazoEnDias;
-    protected double monto;
-    protected String tipoInversion;
-    protected boolean estaActiva;
+    private LocalDate fechaConst;
+    private int plazoEnDias;
+    private double monto;
+    private String tipoInversion;
+    private boolean estaActiva;
 
     public Inversion(LocalDate fechaOperacion, String dniUsuarioOperador, String cvuCuentaEmisora, boolean aprobada, LocalDate fechaConst, int plazoEnDias, double monto, String tipoInversion, boolean estaActiva) {
         super(fechaOperacion, dniUsuarioOperador, cvuCuentaEmisora, aprobada);
@@ -53,11 +53,15 @@ public abstract class Inversion extends Actividad {
     	}
     
     public int getPlazoEnDias() { 
-    	return plazoEnDias; 
+    	return this.plazoEnDias; 
     	}
     
     public double getMonto() { 
-    	return monto; 
+    	return this.monto; 
+    	}
+    
+    public boolean getEstado() { 
+    	return this.estaActiva; 
     	}
 
 }
